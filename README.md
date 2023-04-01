@@ -1,2 +1,2 @@
-# wominjeka
-Standalone Chat API for Yipnyap
+# Wominjeka
+Literally "Hello". Standalone Chat API for Yipnyap
