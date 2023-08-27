@@ -21,7 +21,7 @@ export const WSOptions: any = {
         debug(`🐺 ${ws.data.id} connected`)
 
         // JSON as binary
-        const msg = new Message(ws, 1, 'com.ypnyp.socket.identify', {
+        const msg = new Message(ws, 1, 'me.yipnyap.socket.identify', {
             id: ws.data.id,
         })
         msg.write()

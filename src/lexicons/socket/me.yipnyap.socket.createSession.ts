@@ -1,7 +1,7 @@
 import {addUser} from '../../database/memory'
 import Debug from 'debug'
 
-const debug = Debug('com.ypnyp.socket.createSession')
+const debug = Debug('me.yipnyap.socket.createSession')
 export default function Identify(ws: any, d: { handle: any; password: any; }) {
     if (!d.handle) throw new Error('Missing handle')
     if (!d.password) throw new Error('Missing password')
@@ -15,7 +15,7 @@ export default function Identify(ws: any, d: { handle: any; password: any; }) {
         ws.data.authenticated = true
         return {
             op: 1,
-            t: 'com.ypnyp.socket.sessionCreated',
+            t: 'me.yipnyap.socket.sessionCreated',
             d: {
                 id: r.did,
                 handle: r.handle,
