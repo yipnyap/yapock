@@ -1,39 +1,45 @@
-import {Database} from "bun:sqlite";
+import {Database} from 'bun:sqlite'
 
-export const db = new Database(":memory:");
+export const db = new Database(':memory:');
 
 // Create a schema that holds user IDs and whether they're connected.
 const UserTableCreation =
     db.query(`CREATE TABLE users
               (
-                  id        TEXT PRIMARY KEY,
-                  connected BOOLEAN
+                  did        TEXT PRIMARY KEY,
+                  email      TEXT,
+                  handle     TEXT,
+                  password   TEXT
               )`);
+// Passwords should be stored as hashes, but for now, we'll store them as plaintext to test
+// @TODO: Don't, please god don't, store passwords as plaintext when this faces users.
 
 UserTableCreation.run();
 
 // Function to add a user to the database.
-export async function addUser(id: string) {
-    const query = db.prepare(`INSERT INTO users (id, connected)
-                              VALUES ($ID, $CONNECTED)`);
+export async function addUser(obj: any) {
+    const query = db.prepare(`INSERT INTO users (did, handle, password) VALUES ($DID, $HANDLE, $PASSWORD)`);
 
-    await query.run({
-        $ID: id,
-        $CONNECTED: true, // They're connected, so set this to true.
+    query.run({
+        $DID: obj.did,
+        $HANDLE: obj.handle,
+        $PASSWORD: obj.password,
     });
 
     // Close the query.
     query.finalize();
+
+    return obj;
 }
 
 // Function to get a user from the database.
-export async function getUser(id: string) {
+export async function getUser(did: string) {
     const query = db.prepare(`SELECT *
                               FROM users
-                              WHERE id = $ID`);
+                              WHERE did = $DID`);
 
     const user = await query.get({
-        $ID: id,
+        $DID: did,
     });
 
     // Close the query.
