@@ -1,5 +1,3 @@
-import {Context} from "elysia/dist";
-
 export function Describe() {
     return {
         lexicon: 1,
@@ -50,7 +48,7 @@ export function Describe() {
 
 export default function DescribeServer() {
     return {
-        availableUserDomains: ['yipnyap.me'],
+        availableUserDomains: ['.yipnyap.me'],
         links: {
             privacyPolicy: 'https://yipnyap.me/privacy',
             termsOfService: 'https://yipnyap.me/terms'
