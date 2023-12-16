@@ -1,0 +1,24 @@
+{
+  "lexicon": 1,
+  "id": "me.yipnyap.collection.getPack",
+  "defs": {
+    "main": {
+      "type": "query",
+      "description": "Get a single pack",
+      "parameters": {
+        "type": "params",
+        "required": ["pack"],
+        "properties": {
+          "pack": { "type": "string", "format": "at-identifier" }
+        }
+      },
+      "output": {
+        "encoding": "application/json",
+        "schema": {
+          "type": "ref",
+          "ref": "me.yipnyap.collection.defs#packViewBasic"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "lexicon": 1,
+  "id": "me.yipnyap.server.listLexicons",
+  "defs": {
+    "main": {
+      "type": "query",
+      "description": "List all lexicons available on this server.",
+      "output": {
+        "encoding": "application/json",
+        "schema": {
+          "type": "object",
+          "required": [
+            "lexicons"
+          ],
+          "properties": {
+            "lexicons": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
