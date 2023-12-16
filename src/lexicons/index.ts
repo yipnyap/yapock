@@ -18,13 +18,14 @@ export const lex = new Lexicons()
  */
 
 const log = Debug('lexicons:walk')
-const lexicons: {
+export const lexicons: {
     list: any[]
     implemented: any[]
 } = {
     list: [],
     implemented: []
 }
+
 const walk = function (dir: string, done: { (err: any, res?: any): void; (arg0: NodeJS.ErrnoException | null, arg1: any[] | undefined): void }) {
     log(`Walking ${dir}`)
 

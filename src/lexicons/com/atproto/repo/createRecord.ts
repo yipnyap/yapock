@@ -1,4 +1,4 @@
-import {LexValue} from '@atproto/lexicon'
+import {LexValue, RepoRecord} from '@atproto/lexicon'
 import {AccountStoreInstance} from '@/storage'
 import {WriteOpAction} from '@atproto/repo'
 import { TID } from '@atproto/common-web';
@@ -8,32 +8,28 @@ export default async function CreateRecord(context: {
     body: {
         repo: string;
         collection: string;
-        record: LexValue;
+        record: RepoRecord;
     }
 }) {
     let {repo, collection, record} = context.body;
-    await resolve(repo).then((res) => {
-        repo = res;
-    }).catch((err) => {
-        throw new Error(err)
-    })
+    repo = await resolve(repo)
 
-    const repoStore = await AccountStoreInstance.getRepo();
+    const repoStore = await AccountStoreInstance.getRepo(repo)
     const rkey = TID.nextStr();
     const res = await repoStore.applyWrites(
         {
             action: WriteOpAction.Create,
             collection,
             rkey,
-            record: {
-                name: 'hello'
-            },
+            record
         },
-        AccountStoreInstance.getKeypair()
+        AccountStoreInstance.getKeypair(repo)
     )
+
+    const cid = await res.data.get(`${collection}/${rkey}`)
 
     return {
         uri: `at://${repo}/${collection}/${rkey}`,
-        cid: res.commit.data.toString(),
+        cid: cid?.toString(),
     }
 }

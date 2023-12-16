@@ -1,6 +1,6 @@
-import {CID} from 'multiformats'
 import {AccountStoreInstance} from '@/storage'
 import {resolve} from '@/auth/did'
+import { def } from '@atproto/common-web'
 
 export default async function GetRecord(context: {
     query: {
@@ -14,27 +14,20 @@ export default async function GetRecord(context: {
     let {repo, collection, rkey} = query;
     repo = await resolve(repo)
 
-    const storage = AccountStoreInstance.getStorage();
-    const repoStore = await AccountStoreInstance.getRepo();
+    const storage = await AccountStoreInstance.getStorage(repo);
+    const repoStore = await AccountStoreInstance.getRepo(repo);
 
-    const commit = query.commit
-        ? CID.parse(query.commit)
-        : await storage.getHead()
-    if (!commit) {
-        throw new Error('Repository not initialized')
+    const cid = await repoStore.data.get(`${collection}/${rkey}`)
+    if (!cid) return {
+        _statcode: 404,
+        error: 'RecordNotFound',
     }
 
-    const record = await repoStore.getRecord(collection, rkey)
-    if (!record) {
-        return {
-            _statcode: 404,
-            error: 'RecordNotFound'
-        }
-    }
+    const record = await storage.readObj(cid, def.unknown)
 
     return {
         uri: `at://${repo}/${collection}/${rkey}`,
-        cid: commit.toString(),
+        cid: cid.toString(),
         value: record,
     }
 }

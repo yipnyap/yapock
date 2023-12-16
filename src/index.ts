@@ -1,5 +1,3 @@
-import Console from '@/console'
-
 const startupTime = Date.now()
 import {Elysia, ws} from 'elysia'
 import {cors} from '@elysiajs/cors'
@@ -7,6 +5,8 @@ import Debug from 'debug'
 import {WSOptions} from './websocket'
 import {Aggregator} from './xrpc'
 import './lexicons'
+import lexicons from '@/lexicons'
+import {AccountStoreInstance} from '@/storage'
 
 const log = {
     info: Debug('init'),
@@ -50,13 +50,15 @@ const main = () => {
         .use(ws())
         .ws('/ws', WSOptions)
         .use(Aggregator)
-        .get('/', ({set}) => {
+        .get('/', async ({set}) => {
             return {
                 queueTimeMs: Math.round((Object.values(AnalyticaTimeCache).reduce((a, b) => a + b, 0) / Object.values(AnalyticaTimeCache).length) * 100) / 100,
                 queue: Object.keys(AnalyticalTimeWaitCache).length - 1,
                 reqSinceStartup: Object.keys(AnalyticaTimeCache).length,
                 uptime: Date.now() - startupTime,
+                repoMemory: await AccountStoreInstance.getRepoStatistic(),
                 states,
+                xrpc: lexicons.implemented,
             }
         })
         .listen(8080)

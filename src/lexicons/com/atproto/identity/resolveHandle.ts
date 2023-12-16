@@ -6,5 +6,7 @@ export default async function ResolveHandle(context: {
     }
 }) {
     const {handle} = context.query;
-    return await resolve(handle)
+    return {
+        did: await resolve(handle),
+    }
 }
