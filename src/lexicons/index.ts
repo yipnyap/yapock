@@ -9,26 +9,22 @@ import {Lexicons} from '@atproto/lexicon'
 export const lex = new Lexicons()
 
 // search every subfolder recursively for .json files. Assign each lexicon to a key in an object with the lexicon's ID ("id" key)
-/**
- * i.e:
- * com/yipnyap/elysia.json
- * {
- *     "com.yipnyap.elysia": ...,
- * }
- */
-
 const log = Debug('lexicons:walk')
 export const lexicons: {
     list: any[]
     implemented: any[]
+    walked: boolean
 } = {
     list: [],
-    implemented: []
+    implemented: [],
+    walked: false,
 }
 
-const walk = function (dir: string, done: { (err: any, res?: any): void; (arg0: NodeJS.ErrnoException | null, arg1: any[] | undefined): void }) {
-    log(`Walking ${dir}`)
-
+const walk = function (
+    dir: string,
+    done: {
+        (err: NodeJS.ErrnoException | null, res?: string[]): void;
+    }) {
     let results: any[] = []
     fs.readdir(dir, function (err, list) {
         if (err) {
@@ -56,6 +52,8 @@ const walk = function (dir: string, done: { (err: any, res?: any): void; (arg0: 
 
 walk(__dirname, async function (err, results) {
     if (err) throw err
+    if (!results) throw new Error('No results found')
+
     for (const file of results) {
         if (file.endsWith('.json')) {
             const lexicon = await import(file).then((m) => m.default);
@@ -77,6 +75,7 @@ walk(__dirname, async function (err, results) {
     log(`Found ${Object.keys(lexicons.list).length} lexicons.`)
     log(`Found ${lexicons.implemented.length} implemented lexicons.`)
 
+    lexicons.walked = true;
     return lexicons;
 })
 

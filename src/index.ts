@@ -1,10 +1,10 @@
 const startupTime = Date.now()
+import boxen from 'boxen'
 import {Elysia, ws} from 'elysia'
 import {cors} from '@elysiajs/cors'
 import Debug from 'debug'
-import {WSOptions} from './websocket'
+import {WSOptions} from './realtime'
 import {Aggregator} from './xrpc'
-import './lexicons'
 import lexicons from '@/lexicons'
 import {AccountStoreInstance} from '@/storage'
 
@@ -21,11 +21,6 @@ const AnalyticaTimeCache: {
 
 const AnalyticalTimeWaitCache: {
     [key: string]: number
-} = {}
-
-let states: {
-    PLCAttempted?: boolean
-    ServerOnline?: boolean
 } = {}
 
 const main = () => {
@@ -50,25 +45,43 @@ const main = () => {
         .use(ws())
         .ws('/ws', WSOptions)
         .use(Aggregator)
-        .get('/', async ({set}) => {
+        .get('/', async () => {
             return {
                 queueTimeMs: Math.round((Object.values(AnalyticaTimeCache).reduce((a, b) => a + b, 0) / Object.values(AnalyticaTimeCache).length) * 100) / 100,
                 queue: Object.keys(AnalyticalTimeWaitCache).length - 1,
                 reqSinceStartup: Object.keys(AnalyticaTimeCache).length,
                 uptime: Date.now() - startupTime,
                 repoMemory: await AccountStoreInstance.getRepoStatistic(),
-                states,
-                xrpc: lexicons.implemented,
             }
         })
         .listen(8080)
 
-    log.info(`🦊✅ Project W PDS listening at ${app.server?.hostname}:${app.server?.port}. Startup took ${Date.now() - startupTime}ms`)
+    log.info(`Server \x1b[32mOK\x1b[0m: Startup took ${Date.now() - startupTime}ms`)
+    fetch(`${app.server?.hostname}:${app.server?.port}/xrpc/com.atproto.server.describeServer`).then(res => res.json()).then(res => {
+        // @ts-ignore
+        if (!res || !res.availableUserDomains || !res.availableUserDomains.length) {
+            log.error('Aggregator \x1b[31mFAIL\x1b[0m: The server didn\'t describe properly!')
+            console.log(boxen(`\x1b[31mThe server didn't describe properly!\x1b[0m\n${JSON.stringify(res, null, 2)}`, {title: 'Aggregator \x1b[31mFAIL\x1b[0m', borderStyle: 'bold', fullscreen: (width, height) => [width, height - 1]}))
+            process.exit(1)
+        } else {
+            log.info('Aggregator \x1b[32mOK\x1b[0m')
+        }
+    })
 }
 
-const healthCheck = () => {
-    log.info('🦊 W is performing a health check.')
-    main()
-}
-
-healthCheck()
+// wait until lexicons.walked returns true
+log.info('Lexicon ....')
+const wait = setInterval(() => {
+    if (lexicons.walked) {
+        const total = Object.keys(lexicons.list).length;
+        const unimplemented = total - Object.keys(lexicons.implemented).length;
+        if (unimplemented == total) {
+            log.error(boxen('This server does nothing.', {title: 'Aggregator \x1b[31mFAIL\x1b[0m', padding: 1, borderStyle: 'double'}))
+            process.exit(1)
+        } else if (unimplemented > 0) {
+            log.info(`Lexicon \x1b[33mPASS\x1b[0m: ${unimplemented} procedures have no function.`)
+        }
+        clearInterval(wait)
+        main()
+    }
+}, 100)

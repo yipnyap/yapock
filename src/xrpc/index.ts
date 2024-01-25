@@ -8,8 +8,9 @@
  */
 import {Elysia} from 'elysia'
 import Debug from 'debug';
-import {GetXRPCFunction, VerifyXRPC} from '../utils';
-import {GenerateLexiconType} from '../utils/GenerateLexiconType'
+import {GenerateLexiconType} from '@/utils/GenerateLexiconType'
+import {GetXRPCFunction} from '@/utils/URLModification'
+import {VerifyXRPC} from '@/utils/VerifyInputOutput'
 
 const debug = Debug('xrpc:aggregator')
 
